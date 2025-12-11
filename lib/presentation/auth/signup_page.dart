@@ -1,8 +1,9 @@
-import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
-import '../../data/local/app_database.dart';
-import '../../utils/password_helper.dart';
-import '../../utils/validators.dart';
+import '../../utils/password_helper.dart'; // دالة hashPassword
+import '../../utils/validators.dart'; // دالة isValidEmail
+import '../../data/local/hive_database.dart';
+import '../../data/local/user/user_table.dart';
+import 'login_page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -18,10 +19,16 @@ class _SignUpPageState extends State<SignUpPage> {
   final passCtrl = TextEditingController();
   final confirmPassCtrl = TextEditingController();
   final ageCtrl = TextEditingController(text: '22');
-  final db = AppDatabase();
+  final db = HiveDatabase();
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    HiveDatabase.init();
+  }
 
   @override
   void dispose() {
@@ -30,7 +37,6 @@ class _SignUpPageState extends State<SignUpPage> {
     passCtrl.dispose();
     confirmPassCtrl.dispose();
     ageCtrl.dispose();
-    db.close();
     super.dispose();
   }
 
@@ -40,8 +46,8 @@ class _SignUpPageState extends State<SignUpPage> {
     setState(() => _isLoading = true);
 
     try {
-      // Check if email already exists
-      final existingUser = await db.getUserByEmail(emailCtrl.text.trim());
+      final existingUser =
+      await db.getUserByEmail(emailCtrl.text.trim());
 
       if (existingUser != null) {
         if (!mounted) return;
@@ -55,18 +61,14 @@ class _SignUpPageState extends State<SignUpPage> {
         return;
       }
 
-      // Insert new user
-      await db.insertUser(
-        UsersCompanion.insert(
-          name: nameCtrl.text.trim(),
-          email: emailCtrl.text.trim(),
-          password: hashPassword(passCtrl.text),
-          age: int.parse(ageCtrl.text),
-        ),
-      );
+      await db.addUser(User(
+        name: nameCtrl.text.trim(),
+        email: emailCtrl.text.trim(),
+        password: hashPassword(passCtrl.text),
+        age: int.parse(ageCtrl.text),
+      ));
 
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Account created successfully!'),
@@ -74,7 +76,11 @@ class _SignUpPageState extends State<SignUpPage> {
         ),
       );
 
-      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
+
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -101,28 +107,21 @@ class _SignUpPageState extends State<SignUpPage> {
             child: Form(
               key: _formKey,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
-                    Icons.person_add,
-                    size: 80,
-                    color: Theme.of(context).primaryColor,
-                  ),
+                  Icon(Icons.person_add,
+                      size: 80, color: Theme.of(context).primaryColor),
                   const SizedBox(height: 32),
-                  Text(
-                    'Create Account',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                    textAlign: TextAlign.center,
-                  ),
+                  Text('Create Account',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                      textAlign: TextAlign.center),
                   const SizedBox(height: 8),
-                  Text(
-                    'Fill in the details to get started',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  Text('Fill in the details to get started',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(color: Colors.grey),
+                      textAlign: TextAlign.center),
                   const SizedBox(height: 32),
                   TextFormField(
                     controller: nameCtrl,
@@ -183,13 +182,12 @@ class _SignUpPageState extends State<SignUpPage> {
                       labelText: 'Password',
                       prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
+                        icon: Icon(_obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility),
                         onPressed: () {
-                          setState(() => _obscurePassword = !_obscurePassword);
+                          setState(() =>
+                          _obscurePassword = !_obscurePassword);
                         },
                       ),
                       border: OutlineInputBorder(
@@ -210,13 +208,12 @@ class _SignUpPageState extends State<SignUpPage> {
                       labelText: 'Confirm Password',
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureConfirmPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
+                        icon: Icon(_obscureConfirmPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility),
                         onPressed: () {
-                          setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                          setState(() => _obscureConfirmPassword =
+                          !_obscureConfirmPassword);
                         },
                       ),
                       border: OutlineInputBorder(
@@ -242,12 +239,10 @@ class _SignUpPageState extends State<SignUpPage> {
                         ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child:
+                      CircularProgressIndicator(strokeWidth: 2),
                     )
-                        : const Text(
-                      'Create Account',
-                      style: TextStyle(fontSize: 16),
-                    ),
+                        : const Text('Create Account', style: TextStyle(fontSize: 16)),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -255,7 +250,11 @@ class _SignUpPageState extends State<SignUpPage> {
                     children: [
                       const Text('Already have an account? '),
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                        )
+                        ,
                         child: const Text('Login'),
                       ),
                     ],

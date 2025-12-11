@@ -1,16 +1,31 @@
-import 'package:drift/drift.dart';
+class User {
+  String name;
+  String email;
+  String password;
+  int age;
 
-class Users extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  User({
+    required this.name,
+    required this.email,
+    required this.password,
+    required this.age,
+  });
 
-  TextColumn get name => text().withLength(min: 1, max: 50)();
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'email': email,
+      'password': password,
+      'age': age,
+    };
+  }
 
-  TextColumn get email => text().unique()();
-
-  TextColumn get password => text().withLength(min: 8, max: 255)();
-
-  IntColumn get age => integer()();
-
-  DateTimeColumn get createdAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  factory User.fromMap(Map map) {
+    return User(
+      name: map['name'],
+      email: map['email'],
+      password: map['password'],
+      age: map['age'],
+    );
+  }
 }

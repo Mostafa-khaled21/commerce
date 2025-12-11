@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/local/app_database.dart';
+import '../../data/local/user/user_table.dart';
 import '../auth/login_page.dart';
 
 class HomePage extends StatelessWidget {
@@ -24,17 +24,15 @@ class HomePage extends StatelessWidget {
                   content: const Text('Are you sure you want to logout?'),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: const Text('Cancel'),
-                    ),
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('Cancel')),
                     TextButton(
                       onPressed: () {
                         Navigator.pop(ctx);
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const LoginPage(),
-                          ),
+                              builder: (_) => const LoginPage()),
                         );
                       },
                       child: const Text('Logout'),
@@ -55,104 +53,26 @@ class HomePage extends StatelessWidget {
               CircleAvatar(
                 radius: 60,
                 backgroundColor: Theme.of(context).primaryColor,
-                child: Text(
-                  user.name[0].toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 48,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: Text(user.name[0].toUpperCase(),
+                    style: const TextStyle(
+                        fontSize: 48,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold)),
               ),
               const SizedBox(height: 24),
-              Text(
-                'Welcome, ${user.name}!',
-                style: Theme.of(context).textTheme.headlineMedium,
-                textAlign: TextAlign.center,
-              ),
+              Text('Welcome, ${user.name}!',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  textAlign: TextAlign.center),
               const SizedBox(height: 8),
-              Text(
-                user.email,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 32),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      _buildInfoRow(
-                        Icons.person,
-                        'Name',
-                        user.name,
-                      ),
-                      const Divider(height: 24),
-                      _buildInfoRow(
-                        Icons.email,
-                        'Email',
-                        user.email,
-                      ),
-                      const Divider(height: 24),
-                      _buildInfoRow(
-                        Icons.cake,
-                        'Age',
-                        '${user.age} years',
-                      ),
-                      const Divider(height: 24),
-                      _buildInfoRow(
-                        Icons.calendar_today,
-                        'Member Since',
-                        _formatDate(user.createdAt),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              Text(user.email,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.copyWith(color: Colors.grey)),
             ],
           ),
         ),
       ),
     );
-  }
-
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: Colors.grey[600]),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }

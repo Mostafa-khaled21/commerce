@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/local/app_database.dart';
+import '../../data/local/hive_database.dart';
 import '../../utils/password_helper.dart';
 import '../../utils/validators.dart';
 import '../home/home.dart';
@@ -16,15 +16,20 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
-  final db = AppDatabase();
+  final db = HiveDatabase();
   bool _isLoading = false;
   bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    HiveDatabase.init();
+  }
 
   @override
   void dispose() {
     emailCtrl.dispose();
     passCtrl.dispose();
-    db.close();
     super.dispose();
   }
 
@@ -35,10 +40,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final hashedPass = hashPassword(passCtrl.text);
-      final user = await db.loginUser(
-        emailCtrl.text.trim(),
-        hashedPass,
-      );
+      final user = await db.loginUser(emailCtrl.text.trim(), hashedPass);
 
       if (!mounted) return;
 
@@ -55,9 +57,7 @@ class _LoginPageState extends State<LoginPage> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => HomePage(user: user),
-        ),
+        MaterialPageRoute(builder: (_) => HomePage(user: user)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -74,10 +74,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Login'), centerTitle: true),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -85,28 +82,21 @@ class _LoginPageState extends State<LoginPage> {
             child: Form(
               key: _formKey,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
-                    Icons.lock_person,
-                    size: 80,
-                    color: Theme.of(context).primaryColor,
-                  ),
+                  Icon(Icons.lock_person,
+                      size: 80, color: Theme.of(context).primaryColor),
                   const SizedBox(height: 32),
-                  Text(
-                    'Welcome Back!',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                    textAlign: TextAlign.center,
-                  ),
+                  Text('Welcome Back!',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                      textAlign: TextAlign.center),
                   const SizedBox(height: 8),
-                  Text(
-                    'Login to continue',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  Text('Login to continue',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(color: Colors.grey),
+                      textAlign: TextAlign.center),
                   const SizedBox(height: 32),
                   TextFormField(
                     controller: emailCtrl,
@@ -132,13 +122,12 @@ class _LoginPageState extends State<LoginPage> {
                       labelText: 'Password',
                       prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
+                        icon: Icon(_obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility),
                         onPressed: () {
-                          setState(() => _obscurePassword = !_obscurePassword);
+                          setState(() =>
+                          _obscurePassword = !_obscurePassword);
                         },
                       ),
                       border: OutlineInputBorder(
@@ -163,12 +152,10 @@ class _LoginPageState extends State<LoginPage> {
                         ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child:
+                      CircularProgressIndicator(strokeWidth: 2),
                     )
-                        : const Text(
-                      'Login',
-                      style: TextStyle(fontSize: 16),
-                    ),
+                        : const Text('Login', style: TextStyle(fontSize: 16)),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -177,11 +164,10 @@ class _LoginPageState extends State<LoginPage> {
                       const Text("Don't have an account? "),
                       TextButton(
                         onPressed: () {
-                          Navigator.push(
+                          Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const SignUpPage(),
-                            ),
+                                builder: (_) => const SignUpPage()),
                           );
                         },
                         child: const Text('Sign Up'),
