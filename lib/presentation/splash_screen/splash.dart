@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../auth/login_page.dart';
+import '../../data/local/app_prefs.dart';
+import '../../data/local/hive_database.dart';
+import '../main_screen.dart';
+import '../onboarding.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,6 +22,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
+    HiveDatabase.init();
 
     _controller = AnimationController(
       vsync: this,
@@ -34,13 +39,46 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LoginPage()),
-        );
-      }
-    });
+    Timer(const Duration(seconds: 3), _navigateNext);
+  }
+
+  Future<void> _navigateNext() async {
+    final firstTime = await AppPrefs.isFirstTime();
+    final loggedEmail = await AppPrefs.getLoggedInUser();
+
+    if (!mounted) return;
+
+    // أول مرة يفتح → OnBoarding
+    if (firstTime) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const OnBoardingPage()),
+      );
+      return;
+    }
+
+    // مش أول مرة ومفيش مستخدم مسجل → Login
+    if (loggedEmail == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
+      return;
+    }
+
+    // مسجّل قبل كده → روح للـ MainScreen
+    final user = await HiveDatabase().getUserByEmail(loggedEmail);
+    if (user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => MainScreen(user: user)),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
+    }
   }
 
   @override

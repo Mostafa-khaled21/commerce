@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../data/local/hive_database.dart';
+import '../../data/local/app_prefs.dart';
 import '../../utils/password_helper.dart';
 import '../../utils/validators.dart';
-import '../home/home.dart';
+import '../main_screen.dart';
 import 'signup_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -55,9 +56,11 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
 
+      await AppPrefs.setLoggedInUser(emailCtrl.text.trim());
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => HomePage(user: user)),
+        MaterialPageRoute(builder: (_) => MainScreen(user: user)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -98,6 +101,7 @@ class _LoginPageState extends State<LoginPage> {
                           ?.copyWith(color: Colors.grey),
                       textAlign: TextAlign.center),
                   const SizedBox(height: 32),
+
                   TextFormField(
                     controller: emailCtrl,
                     keyboardType: TextInputType.emailAddress,
@@ -114,7 +118,9 @@ class _LoginPageState extends State<LoginPage> {
                       return null;
                     },
                   ),
+
                   const SizedBox(height: 16),
+
                   TextFormField(
                     controller: passCtrl,
                     obscureText: _obscurePassword,
@@ -139,7 +145,9 @@ class _LoginPageState extends State<LoginPage> {
                       return null;
                     },
                   ),
+
                   const SizedBox(height: 24),
+
                   ElevatedButton(
                     onPressed: _isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
@@ -152,12 +160,13 @@ class _LoginPageState extends State<LoginPage> {
                         ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child:
-                      CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     )
                         : const Text('Login', style: TextStyle(fontSize: 16)),
                   ),
+
                   const SizedBox(height: 16),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

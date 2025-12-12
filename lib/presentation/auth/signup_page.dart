@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../utils/password_helper.dart'; // دالة hashPassword
-import '../../utils/validators.dart'; // دالة isValidEmail
+import '../../utils/password_helper.dart';
+import '../../utils/validators.dart';
 import '../../data/local/hive_database.dart';
 import '../../data/local/user/user_table.dart';
 import 'login_page.dart';
