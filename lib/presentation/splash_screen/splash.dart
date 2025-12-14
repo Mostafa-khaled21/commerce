@@ -48,7 +48,6 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (!mounted) return;
 
-    // أول مرة يفتح → OnBoarding
     if (firstTime) {
       Navigator.pushReplacement(
         context,
@@ -57,7 +56,6 @@ class _SplashScreenState extends State<SplashScreen>
       return;
     }
 
-    // مش أول مرة ومفيش مستخدم مسجل → Login
     if (loggedEmail == null) {
       Navigator.pushReplacement(
         context,
@@ -66,7 +64,6 @@ class _SplashScreenState extends State<SplashScreen>
       return;
     }
 
-    // مسجّل قبل كده → روح للـ MainScreen
     final user = await HiveDatabase().getUserByEmail(loggedEmail);
     if (user != null) {
       Navigator.pushReplacement(

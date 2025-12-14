@@ -170,7 +170,6 @@ class ProfilePage extends StatelessWidget {
 
         const Divider(height: 32),
 
-        // 🔥 زر Logout
         _buildOptionTile(
           context,
           icon: Icons.logout,
@@ -222,10 +221,8 @@ class ProfilePage extends StatelessWidget {
             onPressed: () async {
               Navigator.pop(ctx);
 
-              // 🔥 امسح اليوزر من التخزين
               await AppPrefs.logout();
 
-              // ⛔ امنع الرجوع واعمل إعادة توجيه للّوجين
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginPage()),
